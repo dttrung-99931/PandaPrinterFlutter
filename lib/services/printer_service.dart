@@ -21,12 +21,12 @@ class PrinterService extends ChangeNotifier {
   void setListener() {
     PrintPlugin.listenChannelEvent(onPrintSuccess: () {
       log('print success');
+      _printSuccessCompleter.completeIfNot(true);
     }, onPrintFail: () {
       log('print failed');
       _printSuccessCompleter.completeIfNot(false);
     }, onConnectSuccess: () {
       log('Connect sucess');
-      _printSuccessCompleter.completeIfNot(true);
     }, onConnectFail: () {
       log('Connect failed');
     }, onDisconnected: () {
@@ -52,11 +52,12 @@ class PrinterService extends ChangeNotifier {
 
   Future<Either<AppError, void>> print() async {
     _printSuccessCompleter = Completer();
-    PrintPlugin.printQrCodeLogin({
-      'title': 'Test',
-      'data': 'Test',
-      'content': 'Test',
-    });
+    PrintPlugin.printerFilter('aaa');
+    // PrintPlugin.printQrCodeLogin({
+    //   'title': 'Test',
+    //   'data': 'Test',
+    //   'content': 'Test',
+    // });
     return await _printSuccessCompleter.future ? const Right(null) : Left(PrinterError(message: 'Print failed'));
   }
 }

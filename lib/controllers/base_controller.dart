@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:panda_printer_example/models/app_error.dart';
 import 'package:panda_printer_example/utils/loading_utils.dart';
+import 'package:panda_printer_example/utils/overlay_utils.dart';
 
 class BaseController extends ChangeNotifier {
   AppError? _error;
@@ -28,12 +29,15 @@ class BaseController extends ChangeNotifier {
         return null;
       },
       (T result) {
+        onSuccess(result);
         return result;
       },
     );
   }
 
-  void _onErrorDefault(AppError error) {}
+  void _onErrorDefault(AppError error) {
+    OverlayUtils.showSnackBar(error.message);
+  }
 
   Future<T> load<T>(Future<T> Function() action) async {
     T result;

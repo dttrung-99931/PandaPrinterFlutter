@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:panda_printer_example/screens/print_screen.dart';
+import 'package:panda_printer_example/utils/overlay_utils.dart';
 
 class PrinterApp extends StatelessWidget {
   const PrinterApp({super.key});
@@ -17,6 +18,14 @@ class PrinterApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const TestPrintScreen(),
+      builder: (context, child) {
+        return Stack(
+          children: <Widget>[
+            child!,
+            const Positioned.fill(child: SnackMessageOverlayWidget()),
+          ],
+        );
+      },
     );
   }
 }
