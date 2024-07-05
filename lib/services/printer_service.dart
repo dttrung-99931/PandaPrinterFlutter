@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:panda_printer_example/models/app_error.dart';
 import 'package:panda_printer_example/models/printer_model.dart';
 import 'package:panda_printer_example/utils/ble_utils.dart';
+import 'package:panda_printer_example/utils/extensions/async_extension.dart';
 import 'package:panda_printer_example/utils/extensions/list_extension.dart';
 import 'package:print_plugin/print_plugin.dart';
 
@@ -15,14 +16,17 @@ class PrinterService extends ChangeNotifier {
     setListener();
   }
   final List<PrinterModel> foundPrinters = [];
+  late Completer<bool> _printSuccessCompleter;
 
   void setListener() {
     PrintPlugin.listenChannelEvent(onPrintSuccess: () {
       log('print success');
     }, onPrintFail: () {
       log('print failed');
+      _printSuccessCompleter.completeIfNot(false);
     }, onConnectSuccess: () {
       log('Connect sucess');
+      _printSuccessCompleter.completeIfNot(true);
     }, onConnectFail: () {
       log('Connect failed');
     }, onDisconnected: () {
@@ -47,7 +51,12 @@ class PrinterService extends ChangeNotifier {
   }
 
   Future<Either<AppError, void>> print() async {
-    PrintPlugin.printerFilter("Test");
-    return const Right(null);
+    _printSuccessCompleter = Completer();
+    PrintPlugin.printQrCodeLogin({
+      'title': 'Test',
+      'data': 'Test',
+      'content': 'Test',
+    });
+    return await _printSuccessCompleter.future ? const Right(null) : Left(PrinterError(message: 'Print failed'));
   }
 }
