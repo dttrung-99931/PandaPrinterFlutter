@@ -4,6 +4,8 @@ import 'dart:developer';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
+import 'package:panda_print_plugin/models/panda_printer.dart';
+import 'package:panda_print_plugin/panda_print.dart';
 import 'package:panda_printer_example/models/app_error.dart';
 import 'package:panda_printer_example/models/printer_model.dart';
 import 'package:panda_printer_example/utils/ble_utils.dart';
@@ -38,8 +40,16 @@ class PrinterService extends ChangeNotifier {
     if (!await BleUtils.requestPermissions()) {
       return Left(PrinterError(message: 'Bluetooth permissions need to be granted'));
     }
-    String printersJson = await PrintPlugin.discoverBTDevices();
-    List<PrinterModel> printers = List.from(jsonDecode(printersJson)).mapList((json) => PrinterModel.fromMap(json));
+    List<PandaPrinter> pandaPrinters = await PandaPrint.discoverPrinters();
+    List<PrinterModel> printers = pandaPrinters.mapList(
+      (element) => PrinterModel(
+        address: element.address,
+        name: element.name,
+        btClass: 'btClass',
+        isBond: true,
+      ),
+    );
+    // List<PrinterModel> printers = List.from(jsonDecode(printersJson)).mapList((json) => PrinterModel.fromMap(json));
     return Right(printers);
   }
 

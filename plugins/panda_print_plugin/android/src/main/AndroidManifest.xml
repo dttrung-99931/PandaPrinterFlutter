@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.example.panda_print_plugin">
+  <!-- Permission for connecting to a paired bluetooth device ...-->
+  <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+  <!-- Permission for discover and pair bluetooth device-->
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+  <!-- Permission for discover nearby devices-->
+  <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation"/>
+  <!-- Required to be able to connect to paired Bluetooth devices  -->
+  <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+  <!-- Indicate that app don't use access location via bluetooth to bypass request location permission -->
+  <!-- <strike><uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /></strike> -->
+</manifest>
+  
