@@ -10,6 +10,10 @@ import 'package:panda_print_plugin/models/panda_printer.dart';
 import 'panda_print_plugin.dart';
 
 class PandaPrint {
+  static Stream<List<PandaPrinter>> get discoveredPrintersStream {
+    return PandaPrintPlugin.instance.discoveredPrintersStream;
+  }
+
   static Future<List<PandaPrinter>> discoverPrinters() {
     return PandaPrintPlugin.instance.discoverPrinters();
   }

@@ -9,6 +9,11 @@ class PandaPrinter {
     required this.address,
   });
 
+  static List<PandaPrinter> fromJsons(String jsonString) {
+    List<dynamic> printersJson = jsonDecode(jsonString);
+    return printersJson.map((e) => PandaPrinter.fromMap(e)).toList();
+  }
+
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'name': name,

@@ -1,25 +1,51 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:panda_print_plugin/models/panda_printer.dart';
+import 'package:panda_print_plugin/models/printer_manager_status.dart';
 
 import 'panda_print_plugin.dart';
 
 /// An implementation of [PandaPrintPlugin] that uses method channels.
 class PandaPrintPluginAndroid extends PandaPrintPlugin {
+  // Channel names
+  static const discoveredPrinterEventName = 'discovered_printers_event_channel';
+  static const statusEvtChannelName = 'status_event_channel';
+  static const pluginChannelName = 'panda_print_plugin';
+  static const logMethodName = 'logd';
+  // Channel method names
   static const discoverPrintersMethod = 'discoverPrinters';
   static const requestPermissionsMethod = 'requestPermissions';
 
   /// The method channel used to interact with the native platform.
   @visibleForTesting
-  final channel = const MethodChannel('panda_print_plugin');
+  final channel = const MethodChannel(pluginChannelName);
+
+  @visibleForTesting
+  final discoveredPrintersEvtChannel = const EventChannel(discoveredPrinterEventName);
+
+  @visibleForTesting
+  final statusEvtChannel = const EventChannel(statusEvtChannelName);
+
+  @override
+  Stream<List<PandaPrinter>> get discoveredPrintersStream => discoveredPrintersEvtChannel.receiveBroadcastStream().map(
+        (event) {
+          return PandaPrinter.fromJsons(event.toString());
+        },
+      );
+
+  Stream<PrinterManagerStatus> get statusStream => statusEvtChannel.receiveBroadcastStream().map(
+        (event) {
+          return PrinterManagerStatus.fromJson(event.toString());
+        },
+      );
 
   @override
   Future<void> init() async {
     final bool isGranted = await _requestPrinterPermissions();
     log('Printer permission granted: $isGranted');
+    channel.setMethodCallHandler(_nativeMethodCallHandler);
   }
 
   Future<bool> _requestPrinterPermissions() async {
@@ -28,8 +54,15 @@ class PandaPrintPluginAndroid extends PandaPrintPlugin {
 
   @override
   Future<List<PandaPrinter>> discoverPrinters() async {
-    String printersJsonStr = await channel.invokeMethod(discoverPrintersMethod);
-    List<dynamic> printersJson = jsonDecode(printersJsonStr);
-    return printersJson.map((e) => PandaPrinter.fromMap(e)).toList();
+    String? printersJson = await channel.invokeMethod(discoverPrintersMethod);
+    return printersJson != null ? PandaPrinter.fromJsons(printersJson) : [];
+  }
+
+  Future _nativeMethodCallHandler(MethodCall call) async {
+    switch (call.method) {
+      case logMethodName:
+        log(call.arguments.toString());
+        break;
+    }
   }
 }

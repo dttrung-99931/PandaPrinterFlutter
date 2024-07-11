@@ -24,6 +24,8 @@ abstract class PandaPrintPlugin extends PlatformInterface {
     _instance = instance;
   }
 
+  Stream<List<PandaPrinter>> get discoveredPrintersStream;
+
   Future<List<PandaPrinter>> discoverPrinters() {
     throw UnimplementedError('discoverPrinters() has not been implemented.');
   }
