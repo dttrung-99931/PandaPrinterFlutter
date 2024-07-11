@@ -1,0 +1,2 @@
+include ':app', 'posprinterconnectandsendsdk.jar'
+rootProject.name = 'print_plugin'
