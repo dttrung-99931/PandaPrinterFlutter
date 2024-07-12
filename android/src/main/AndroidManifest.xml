@@ -10,5 +10,8 @@
   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
   <!-- Indicate that app don't use access location via bluetooth to bypass request location permission -->
   <!-- <strike><uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /></strike> -->
+  <application>
+    <service android:name="net.posprinter.service.PosprinterService" />
+  </application>
 </manifest>
   

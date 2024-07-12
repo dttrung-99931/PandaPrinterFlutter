@@ -6,26 +6,31 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothClass
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.os.Build
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.example.panda_print_plugin.models.Printer
+import net.posprinter.posprinterface.IMyBinder
+import net.posprinter.posprinterface.UiExecute
+import net.posprinter.service.PosprinterService
 
 @TargetApi(Build.VERSION_CODES.M)
-class PrintersManager(private val appContext: Context) {
+class PrintersManager(
+    private val appContext: Context,
+    private val log: (msg: String) -> Unit
+) {
     companion object {
         const val REQUEST_CODE_TURN_ON_BLUETOOTH = 123
         const val DISCOVER_MILIS = 4000L
     }
 
-    private val bluetoothManager: BluetoothManager = appContext.getSystemService(BluetoothManager::class.java)
+    private val bluetoothManager: BluetoothManager =
+        appContext.getSystemService(BluetoothManager::class.java)
     private val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
     private val handler = Handler(Looper.getMainLooper())
 
@@ -38,10 +43,27 @@ class PrintersManager(private val appContext: Context) {
                 .map { Printer(it.name, it.address) }
         }
 
+    lateinit var printerService: IMyBinder
+
+    fun init() {
+        setupBluetoothReceiver()
+        setupPrinterService()
+    }
+
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
+            printerService = p1 as IMyBinder
+            log("Printer service connected")
+        }
+
+        override fun onServiceDisconnected(p0: ComponentName?) {
+            log("Printer service disconnected")
+        }
+    }
 
     private val bluetoothReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(p0: Context, intent: Intent) {
-            if (intent.action != BluetoothDevice.ACTION_FOUND){
+            if (intent.action != BluetoothDevice.ACTION_FOUND) {
                 return
             }
             val device: BluetoothDevice =
@@ -59,12 +81,17 @@ class PrintersManager(private val appContext: Context) {
         return discoveredDevices.any { it.address == device.address }
     }
 
-    fun registerReceiver() {
+    private fun setupPrinterService() {
+        val intent = Intent(appContext, PosprinterService::class.java)
+        appContext.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    private fun setupBluetoothReceiver() {
         val intentFilter = IntentFilter(BluetoothDevice.ACTION_FOUND)
         appContext.registerReceiver(bluetoothReceiver, intentFilter)
     }
 
-    fun unregisterReceiver() {
+    fun onClose() {
         appContext.unregisterReceiver(bluetoothReceiver)
     }
 
@@ -98,4 +125,38 @@ class PrintersManager(private val appContext: Context) {
         val turnOnBluetooth = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         activity.startActivityForResult(turnOnBluetooth, REQUEST_CODE_TURN_ON_BLUETOOTH)
     }
+
+
+    fun connectToPrinter(
+        printerAddress: String,
+        onSuccess: () -> Unit,
+        onError: (error: Any) -> Unit
+    ){
+        val printer = bluetoothAdapter.getRemoteDevice(printerAddress)
+
+        // Bonding printer
+        if (printer.bondState == BluetoothDevice.BOND_NONE) {
+            log("Bonding to ${printer.address}")
+            val success = printer.createBond()
+            if (success) {
+                log("Bonding successfully")
+            } else {
+                onError("Bonding failed, exit")
+                log("Bonding failed, exit")
+                return
+            }
+        }
+
+        // Connect printer
+        printerService.connectBtPort(printerAddress, object : UiExecute {
+            override fun onsucess() {
+                onSuccess()
+            }
+
+            override fun onfailed() {
+                onError("Failed to connect printer")
+            }
+        })
+    }
+
 }

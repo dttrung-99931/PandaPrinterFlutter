@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:panda_printer_example/app.dart';
 
 bool _isLoadingShowing = false;
@@ -8,42 +9,44 @@ void showLoading() {
     return;
   }
   _isLoadingShowing = true;
-  PrinterApp.navigator.push(
-    PageRouteBuilder(
-      barrierColor: Colors.black.withOpacity(0.5),
-      opaque: false,
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return const PopScope(
-          canPop: false,
-          child: Material(
-            type: MaterialType.transparency,
-            child: SafeArea(
-              child: Center(
-                child: SizedBox.square(
-                  dimension: 24,
-                  child: CircularProgressIndicator(),
+  SchedulerBinding.instance.addPostFrameCallback((_) {
+    PrinterApp.navigator.push(
+      PageRouteBuilder(
+        barrierColor: Colors.black.withOpacity(0.5),
+        opaque: false,
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return const PopScope(
+            canPop: false,
+            child: Material(
+              type: MaterialType.transparency,
+              child: SafeArea(
+                child: Center(
+                  child: SizedBox.square(
+                    dimension: 24,
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      },
-      settings: const RouteSettings(name: _loadingRoute),
-      transitionDuration: const Duration(milliseconds: 200),
-      reverseTransitionDuration: const Duration(milliseconds: 200),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return AnimatedBuilder(
-          animation: animation,
-          builder: (context, _) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-        );
-      },
-    ),
-  );
+          );
+        },
+        settings: const RouteSettings(name: _loadingRoute),
+        transitionDuration: const Duration(milliseconds: 200),
+        reverseTransitionDuration: const Duration(milliseconds: 200),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, _) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+          );
+        },
+      ),
+    );
+  });
 }
 
 void hideLoading() {

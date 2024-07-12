@@ -1,1 +1,2 @@
+include ':app', 'posprinterconnectandsendsdk.jar'
 rootProject.name = 'panda_print_plugin'

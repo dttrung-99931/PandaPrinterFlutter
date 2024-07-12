@@ -9,6 +9,24 @@ class PrinterController extends BaseController with DisposableMixin {
     _listenFoundPrinters();
   }
 
+  final PrinterService _service = PrinterService();
+
+  PrinterModel? _connectedPrinter;
+  PrinterModel? get connectedPrinter => _connectedPrinter;
+
+  final List<PrinterModel> foundPrinters = [];
+
+  bool isInitCompleted = false;
+
+  Future<void> init() async {
+    await _service.initPrinterPlugin();
+    isInitCompleted = true;
+    // await load(
+    //   () async {},
+    // );
+    notifyListeners();
+  }
+
   void _listenFoundPrinters() {
     addSubscription(_service.foundPrintersStream.listen(
       (List<PrinterModel> found) {
@@ -17,13 +35,6 @@ class PrinterController extends BaseController with DisposableMixin {
       },
     ));
   }
-
-  final PrinterService _service = PrinterService();
-
-  PrinterModel? _connectedPrinter;
-  PrinterModel? get connectedPrinter => _connectedPrinter;
-
-  final List<PrinterModel> foundPrinters = [];
 
   Future<void> lookUpPrinters() async {
     await handleServiceResult(

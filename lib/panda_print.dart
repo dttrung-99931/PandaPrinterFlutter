@@ -5,7 +5,9 @@
 // platforms in the `pubspec.yaml` at
 // https://flutter.dev/docs/development/packages-and-plugins/developing-packages#plugin-platforms.
 
+import 'package:dartz/dartz.dart';
 import 'package:panda_print_plugin/models/panda_printer.dart';
+import 'package:panda_print_plugin/models/printer_error.dart';
 
 import 'panda_print_plugin.dart';
 
@@ -16,6 +18,10 @@ class PandaPrint {
 
   static Future<List<PandaPrinter>> discoverPrinters() {
     return PandaPrintPlugin.instance.discoverPrinters();
+  }
+
+  static Future<Either<PrinterError, void>> connectToPrinter(String printerAddress) {
+    return PandaPrintPlugin.instance.connectPrinter(printerAddress);
   }
 
   static Future<void> init() async {

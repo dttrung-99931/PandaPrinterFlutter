@@ -1,4 +1,6 @@
+import 'package:dartz/dartz.dart';
 import 'package:panda_print_plugin/models/panda_printer.dart';
+import 'package:panda_print_plugin/models/printer_error.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'panda_print_plugin_android.dart';
@@ -32,6 +34,10 @@ abstract class PandaPrintPlugin extends PlatformInterface {
 
   Future<void> init() {
     throw UnimplementedError('init() has not been implemented.');
+  }
+
+  Future<Either<PrinterError, void>> connectPrinter(String printerAddress) {
+    throw UnimplementedError('connectPrinter() has not been implemented.');
   }
 
   // TODO: Connnect printer

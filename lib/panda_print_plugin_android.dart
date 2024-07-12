@@ -1,8 +1,10 @@
 import 'dart:developer';
 
+import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:panda_print_plugin/models/panda_printer.dart';
+import 'package:panda_print_plugin/models/printer_error.dart';
 import 'package:panda_print_plugin/models/printer_manager_status.dart';
 
 import 'panda_print_plugin.dart';
@@ -17,6 +19,7 @@ class PandaPrintPluginAndroid extends PandaPrintPlugin {
   // Channel method names
   static const discoverPrintersMethod = 'discoverPrinters';
   static const requestPermissionsMethod = 'requestPermissions';
+  static const connectPrinterMethod = 'connectPrinter';
 
   /// The method channel used to interact with the native platform.
   @visibleForTesting
@@ -43,14 +46,14 @@ class PandaPrintPluginAndroid extends PandaPrintPlugin {
 
   @override
   Future<void> init() async {
-    final bool isGranted = await _requestPrinterPermissions();
-    log('Printer permission granted: $isGranted');
+    // final bool isGranted = await _requestPrinterPermissions();
+    // log('Printer permission granted: $isGranted');
     channel.setMethodCallHandler(_nativeMethodCallHandler);
   }
 
-  Future<bool> _requestPrinterPermissions() async {
-    return await channel.invokeMethod(requestPermissionsMethod);
-  }
+  // Future<bool> _requestPrinterPermissions() async {
+  //   channel.invokeMethod(requestPermissionsMethod);
+  // }
 
   @override
   Future<List<PandaPrinter>> discoverPrinters() async {
@@ -63,6 +66,16 @@ class PandaPrintPluginAndroid extends PandaPrintPlugin {
       case logMethodName:
         log(call.arguments.toString());
         break;
+    }
+  }
+
+  @override
+  Future<Either<PrinterError, void>> connectPrinter(String printerAddress) async {
+    try {
+      await channel.invokeMethod(connectPrinterMethod, printerAddress);
+      return const Right(null);
+    } catch (e) {
+      return Left(ConnectPrinterError(message: e.toString()));
     }
   }
 }

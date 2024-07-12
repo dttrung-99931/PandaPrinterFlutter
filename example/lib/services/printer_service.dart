@@ -10,13 +10,15 @@ import 'package:panda_printer_example/utils/ble_utils.dart';
 import 'package:panda_printer_example/utils/extensions/list_extension.dart';
 
 class PrinterService extends ChangeNotifier {
-  PrinterService() {
-    setListener();
-  }
+  PrinterService();
   final Stream<List<PrinterModel>> foundPrintersStream = PandaPrint.discoveredPrintersStream.map(
     (List<PandaPrinter> found) => found.mapList(PrinterModel.fromPandaPrinter),
   );
   late Completer<bool> _printSuccessCompleter;
+
+  Future<void> initPrinterPlugin() async {
+    await PandaPrint.init();
+  }
 
   void setListener() {
     // PrintPlugin.listenChannelEvent(onPrintSuccess: () {
@@ -44,11 +46,12 @@ class PrinterService extends ChangeNotifier {
   }
 
   Future<Either<AppError, void>> connectPrinter(PrinterModel printer) async {
-    // bool success = await PrintPlugin.connectBle(printer.address);
-    // return success
-    //     ? const Right(null) // null for void
-    //     : Left(PrinterError(message: 'Connect to printer ${printer.address} failed'));
-    return Right(null);
+    final result = await PandaPrint.connectToPrinter(printer.address);
+    return result.leftMap(
+      (l) {
+        return AppError(message: l.message);
+      },
+    );
   }
 
   Future<Either<AppError, void>> print() async {

@@ -2,7 +2,6 @@ package com.example.panda_print_plugin
 
 import android.app.Activity
 import android.content.Intent
-import android.util.Log
 import androidx.lifecycle.Observer
 import com.example.panda_print_plugin.models.Printer
 import com.example.panda_print_plugin.models.PrinterManagerStatus
@@ -22,6 +21,7 @@ class PandaPrintPlugin: PandaPrintActivityAware(), FlutterPlugin, MethodCallHand
       const val DISCOVERED_PRINTERS_EVT_CHANNEL = "discovered_printers_event_channel"
       const val STATUS_EVT_CHANNEL = "status_event_channel"
       const val FLUTTER_LOG_METHOD = "logd"
+      const val CONNECT_PRINTER_METHOD = "connectPrinter"
   }
 
   /** Channels for communication with Flutter */
@@ -84,9 +84,9 @@ class PandaPrintPlugin: PandaPrintActivityAware(), FlutterPlugin, MethodCallHand
 
 
   private fun setupNativePrinterManager(binding: FlutterPlugin.FlutterPluginBinding) {
-    printersManager = PrintersManager(binding.applicationContext)
+    printersManager = PrintersManager(binding.applicationContext, this::log)
       .also {
-        it.registerReceiver()
+        it.init()
       }
     printersManager.discoverPrintersLD.observeForever(onPrintersDiscovered)
   }
@@ -94,7 +94,7 @@ class PandaPrintPlugin: PandaPrintActivityAware(), FlutterPlugin, MethodCallHand
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     channel.setMethodCallHandler(null)
     discoveredPrintersChannel.setStreamHandler(null)
-    printersManager.unregisterReceiver()
+    printersManager.onClose()
     printersManager.discoverPrintersLD.removeObserver(onPrintersDiscovered)
   }
 
@@ -104,8 +104,31 @@ class PandaPrintPlugin: PandaPrintActivityAware(), FlutterPlugin, MethodCallHand
       "getPlatformVersion" -> result.success("Android ${android.os.Build.VERSION.RELEASE}")
       "discoverPrinters" -> handleDiscoveringPrinters()
       "requestPermissions" -> requestPrinterPermissions(result)
+      CONNECT_PRINTER_METHOD -> connectPrinter(call)
       else -> result.notImplemented()
     }
+  }
+
+  private fun connectPrinter(call: MethodCall) {
+    val printerAddress = call.arguments?.toString()
+    if (printerAddress.isNullOrEmpty()){
+      responseError("Printer address is empty")
+      return
+    }
+    printersManager.connectToPrinter(printerAddress, {
+      responseSuccess("Connect successfully")
+    }, { error ->
+      responseError(error.toString())
+    })
+  }
+
+  private fun responseSuccess(data: Any){
+    methodChannelResult.success(data)
+  }
+
+  private fun responseError(message: String, code: String = "", details: Any = Unit){
+    log(message.toString())
+    methodChannelResult.error(code, message, details)
   }
 
   private fun handleDiscoveringPrinters() {

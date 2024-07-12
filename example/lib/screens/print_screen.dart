@@ -14,6 +14,12 @@ class _TestPrintScreenState extends State<TestPrintScreen> {
   final PrinterController _controller = PrinterController();
 
   @override
+  void initState() {
+    _controller.init();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -41,26 +47,33 @@ class _TestPrintScreenState extends State<TestPrintScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    MaterialButton(
-                      onPressed: () {
-                        _controller.lookUpPrinters();
-                      },
-                      color: Colors.purple[100],
-                      child: const Text('Search for printers'),
-                    ),
-                    const SizedBox(width: 16),
-                    MaterialButton(
-                      onPressed: () {
-                        _controller.print();
-                      },
-                      color: Colors.purple[100],
-                      child: const Text('Print'),
-                    ),
-                  ],
-                ),
+                AnimatedBuilder(
+                    animation: _controller,
+                    builder: (_, __) {
+                      if (!_controller.isInitCompleted) {
+                        return const SizedBox.shrink();
+                      }
+                      return Row(
+                        children: [
+                          const SizedBox(width: 16),
+                          MaterialButton(
+                            onPressed: () {
+                              _controller.lookUpPrinters();
+                            },
+                            color: Colors.purple[100],
+                            child: const Text('Search for printers'),
+                          ),
+                          const SizedBox(width: 16),
+                          MaterialButton(
+                            onPressed: () {
+                              _controller.print();
+                            },
+                            color: Colors.purple[100],
+                            child: const Text('Print'),
+                          ),
+                        ],
+                      );
+                    }),
               ],
             ),
           ),
