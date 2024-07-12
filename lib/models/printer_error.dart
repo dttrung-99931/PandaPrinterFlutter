@@ -9,3 +9,7 @@ abstract class PrinterError {
 class ConnectPrinterError extends PrinterError {
   ConnectPrinterError({required super.message});
 }
+
+class PrintError extends PrinterError {
+  PrintError({required super.message});
+}

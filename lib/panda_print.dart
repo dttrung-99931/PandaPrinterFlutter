@@ -24,6 +24,10 @@ class PandaPrint {
     return PandaPrintPlugin.instance.connectPrinter(printerAddress);
   }
 
+  static Future<Either<PrinterError, void>> printLoginQR(String loginQrCode) {
+    return PandaPrintPlugin.instance.printLoginQR(loginQrCode);
+  }
+
   static Future<void> init() async {
     return PandaPrintPlugin.instance.init();
   }

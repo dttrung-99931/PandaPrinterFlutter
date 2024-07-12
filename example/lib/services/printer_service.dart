@@ -55,15 +55,11 @@ class PrinterService extends ChangeNotifier {
   }
 
   Future<Either<AppError, void>> print() async {
-    return Right(null);
-
-    // _printSuccessCompleter = Completer();
-    // PrintPlugin.printerFilter('aaa');
-    // // PrintPlugin.printQrCodeLogin({
-    // //   'title': 'Test',
-    // //   'data': 'Test',
-    // //   'content': 'Test',
-    // // });
-    // return await _printSuccessCompleter.future ? const Right(null) : Left(PrinterError(message: 'Print failed'));
+    final result = await PandaPrint.printLoginQR('Login QR');
+    return result.leftMap(
+      (l) {
+        return AppError(message: l.message);
+      },
+    );
   }
 }

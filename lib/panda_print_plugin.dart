@@ -40,6 +40,10 @@ abstract class PandaPrintPlugin extends PlatformInterface {
     throw UnimplementedError('connectPrinter() has not been implemented.');
   }
 
+  Future<Either<PrinterError, void>> printLoginQR(String loginQrCode) {
+    throw UnimplementedError('printLoginQR() has not been implemented.');
+  }
+
   // TODO: Connnect printer
   // lookUpPrinters
   // print

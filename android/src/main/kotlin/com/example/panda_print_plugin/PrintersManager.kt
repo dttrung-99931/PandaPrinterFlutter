@@ -16,8 +16,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.example.panda_print_plugin.models.Printer
 import net.posprinter.posprinterface.IMyBinder
+import net.posprinter.posprinterface.ProcessData
 import net.posprinter.posprinterface.UiExecute
 import net.posprinter.service.PosprinterService
+import net.posprinter.utils.DataForSendToPrinterTSC
+import net.posprinter.utils.DataForSendToPrinterTSC.text
 
 @TargetApi(Build.VERSION_CODES.M)
 class PrintersManager(
@@ -131,7 +134,7 @@ class PrintersManager(
         printerAddress: String,
         onSuccess: () -> Unit,
         onError: (error: Any) -> Unit
-    ){
+    ) {
         val printer = bluetoothAdapter.getRemoteDevice(printerAddress)
 
         // Bonding printer
@@ -155,6 +158,45 @@ class PrintersManager(
 
             override fun onfailed() {
                 onError("Failed to connect printer")
+            }
+        })
+    }
+
+    fun printLoginQr(onSuccess: () -> Unit, onError: (error: Any) -> Unit) {
+        printerService.writeDataByYouself(object : UiExecute {
+            override fun onsucess() {
+                onSuccess()
+            }
+
+            override fun onfailed() {
+                onSuccess()
+            }
+        }, object : ProcessData {
+            override fun processDataBeforeSend(): MutableList<ByteArray> {
+                val printBytes = mutableListOf<ByteArray>().apply {
+                    add(DataForSendToPrinterTSC.direction(1))
+                    add(DataForSendToPrinterTSC.sizeBydot(850, 200))
+//                    add(DataForSendToPrinterTSC.offSetBymm(-10.0))
+//                    add(DataForSendToPrinterTSC.backFeed(180))
+                    add(DataForSendToPrinterTSC.cls())
+                    add(
+                        CustomDataForSendToPrinter.textAlign(
+                            16,
+                            16,
+                            "3",
+                            0,
+                            1,
+                            1,
+                            "Hello world",
+                            2 // 2 center
+                        )
+                    )
+                    add(DataForSendToPrinterTSC.print(1))
+                    add(DataForSendToPrinterTSC.eoj())
+                    add(DataForSendToPrinterTSC.cut())
+
+                }
+                return printBytes
             }
         })
     }

@@ -20,6 +20,7 @@ class PandaPrintPluginAndroid extends PandaPrintPlugin {
   static const discoverPrintersMethod = 'discoverPrinters';
   static const requestPermissionsMethod = 'requestPermissions';
   static const connectPrinterMethod = 'connectPrinter';
+  static const printLoginQRMethod = 'printLoginQR';
 
   /// The method channel used to interact with the native platform.
   @visibleForTesting
@@ -76,6 +77,16 @@ class PandaPrintPluginAndroid extends PandaPrintPlugin {
       return const Right(null);
     } catch (e) {
       return Left(ConnectPrinterError(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<PrinterError, void>> printLoginQR(String loginQrCode) async {
+    try {
+      await channel.invokeMethod(printLoginQRMethod, loginQrCode);
+      return const Right(null);
+    } catch (e) {
+      return Left(PrintError(message: e.toString()));
     }
   }
 }

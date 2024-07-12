@@ -22,6 +22,7 @@ class PandaPrintPlugin: PandaPrintActivityAware(), FlutterPlugin, MethodCallHand
       const val STATUS_EVT_CHANNEL = "status_event_channel"
       const val FLUTTER_LOG_METHOD = "logd"
       const val CONNECT_PRINTER_METHOD = "connectPrinter"
+      const val PRINT_LOGIN_QR_METHOD = "printLoginQR"
   }
 
   /** Channels for communication with Flutter */
@@ -105,8 +106,17 @@ class PandaPrintPlugin: PandaPrintActivityAware(), FlutterPlugin, MethodCallHand
       "discoverPrinters" -> handleDiscoveringPrinters()
       "requestPermissions" -> requestPrinterPermissions(result)
       CONNECT_PRINTER_METHOD -> connectPrinter(call)
+      PRINT_LOGIN_QR_METHOD -> printLoginQR(call)
       else -> result.notImplemented()
     }
+  }
+
+  private fun printLoginQR(call: MethodCall) {
+    printersManager.printLoginQr({
+      responseSuccess("Print successfully")
+    }, {
+      responseError("Print failure")
+    })
   }
 
   private fun connectPrinter(call: MethodCall) {
