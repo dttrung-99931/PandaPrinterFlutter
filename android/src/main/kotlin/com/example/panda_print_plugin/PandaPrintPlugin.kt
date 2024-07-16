@@ -136,8 +136,8 @@ class PandaPrintPlugin: PandaPrintActivityAware(), FlutterPlugin, MethodCallHand
     methodChannelResult.success(data)
   }
 
-  private fun responseError(message: String, code: String = "", details: Any = Unit){
-    log(message.toString())
+  private fun responseError(message: String, code: String = "", details: Any? = null){
+    log(message)
     methodChannelResult.error(code, message, details)
   }
 

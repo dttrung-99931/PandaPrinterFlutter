@@ -19,6 +19,7 @@ import net.posprinter.posprinterface.IMyBinder
 import net.posprinter.posprinterface.ProcessData
 import net.posprinter.posprinterface.UiExecute
 import net.posprinter.service.PosprinterService
+import net.posprinter.utils.DataForSendToPrinterPos80
 import net.posprinter.utils.DataForSendToPrinterTSC
 import net.posprinter.utils.DataForSendToPrinterTSC.text
 
@@ -150,16 +151,74 @@ class PrintersManager(
             }
         }
 
+        disconnectCurrentPrinter(onError)
+
         // Connect printer
-        printerService.connectBtPort(printerAddress, object : UiExecute {
+        printerService.connectBtPort(
+            printerAddress,
+            onPrinterResult(
+                {
+                    onSuccess()
+                    // Check printer response by try to write to printer
+                    printerService.write(
+                        DataForSendToPrinterPos80.openOrCloseAutoReturnPrintState(0x1f),
+                        onPrinterResult(
+                            {
+                                // Then receive write result
+                                printerService.acceptdatafromprinter(
+                                    onPrinterResult(
+                                        // When receive success that means connected successfully, call onSucess
+                                        {},
+                                        // Disconnected
+                                        {},
+                                        "acceptdatafromprinter"
+                                    )
+                                )
+                            },
+                            // Do nothing
+                            {}, "write"
+                        )
+                    )
+                },
+                onError,
+                "connectBtPort"
+            )
+        )
+    }
+
+    private fun disconnectCurrentPrinter(onError: (error: Any) -> Unit) {
+        printerService.checkLinkedState(object : UiExecute {
+            override fun onsucess() {
+                printerService.disconnectCurrentPort(object : UiExecute {
+                    override fun onsucess() {
+                    }
+
+                    override fun onfailed() {
+                        onError("Cannot disconnect current printer")
+                    }
+                })
+            }
+
+            override fun onfailed() {
+            }
+        })
+    }
+
+    // Method that create UiExcute for short
+    private fun onPrinterResult(
+        onSuccess: () -> Unit,
+        onError: (error: Any) -> Unit,
+        method: String
+    ): UiExecute {
+        return object : UiExecute {
             override fun onsucess() {
                 onSuccess()
             }
 
             override fun onfailed() {
-                onError("Failed to connect printer")
+                onError("Failed to connect printer in $method()")
             }
-        })
+        }
     }
 
     fun printLoginQr(onSuccess: () -> Unit, onError: (error: Any) -> Unit) {
@@ -169,36 +228,67 @@ class PrintersManager(
             }
 
             override fun onfailed() {
-                onSuccess()
+                onError("Print failed")
             }
-        }, object : ProcessData {
-            override fun processDataBeforeSend(): MutableList<ByteArray> {
-                val printBytes = mutableListOf<ByteArray>().apply {
-                    add(DataForSendToPrinterTSC.direction(1))
-                    add(DataForSendToPrinterTSC.sizeBydot(850, 200))
-//                    add(DataForSendToPrinterTSC.offSetBymm(-10.0))
-//                    add(DataForSendToPrinterTSC.backFeed(180))
-                    add(DataForSendToPrinterTSC.cls())
-                    add(
-                        CustomDataForSendToPrinter.textAlign(
-                            16,
-                            16,
-                            "3",
-                            0,
-                            1,
-                            1,
-                            "Hello world",
-                            2 // 2 center
-                        )
+        }) {
+            val centerX: Int = 850/2
+            val leftX: Int = 10
+            var y = 0
+            val printBytes = mutableListOf<ByteArray>().apply {
+                add(DataForSendToPrinterTSC.cls())
+                add(DataForSendToPrinterTSC.direction(0))
+                add(DataForSendToPrinterTSC.sizeBydot(850, 420))
+                add(DataForSendToPrinterTSC.gapBydot(0, 0))
+                add(DataForSendToPrinterTSC.offSetBymm(10.0))
+                y += 56
+                add(
+                    CustomDataForSendToPrinter.textAlign(
+                        centerX,
+                        y,
+                        "3",
+                        0,
+                        2,
+                        2,
+                        "Đoàn Thanh Trung",
+                        2 // 2 center
                     )
-                    add(DataForSendToPrinterTSC.print(1))
-                    add(DataForSendToPrinterTSC.eoj())
-                    add(DataForSendToPrinterTSC.cut())
+                )
+                y += 64
+                add(
+                    CustomDataForSendToPrinter.textAlign(
+                        centerX,
+                        y,
+                        "3",
+                        0,
+                        1,
+                        1,
+                        "12345",
+                        2 // 2 center
+                    )
+                )
+                y += 72
+                // width of each cell inside the qr code
+                val cellWidth = 8
+                // 25 is avg number of cells in a qr code (depend on qr version)
+                val qrWidth = 25 * cellWidth
+                add(
+                    DataForSendToPrinterTSC.qrCode(
+                        centerX - qrWidth  /2,
+                        y,
+                        "H",
+                        cellWidth,
+                        "A",
+                        0,
+                        "Hello everyone" // 2 center
+                    )
+                )
+                add(DataForSendToPrinterTSC.print(1))
+                add(DataForSendToPrinterTSC.eoj())
+                add(DataForSendToPrinterTSC.cut())
 
-                }
-                return printBytes
             }
-        })
+            printBytes
+        }
     }
 
 }

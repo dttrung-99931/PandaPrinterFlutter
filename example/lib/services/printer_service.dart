@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:panda_print_plugin/models/panda_printer.dart';
 import 'package:panda_print_plugin/panda_print.dart';
+import 'package:panda_print_plugin/panda_print_storage.dart';
 import 'package:panda_printer_example/models/app_error.dart';
 import 'package:panda_printer_example/models/printer_model.dart';
 import 'package:panda_printer_example/utils/ble_utils.dart';
@@ -18,6 +19,36 @@ class PrinterService extends ChangeNotifier {
 
   Future<void> initPrinterPlugin() async {
     await PandaPrint.init();
+  }
+
+  Future<Either<AppError, void>> connectPrinterByAddress(String address) async {
+    Either<AppError, List<PrinterModel>> result = await lookUpPrinters();
+    PrinterModel? matchPrinter;
+    result.fold(
+      (l) {
+        matchPrinter = null;
+      },
+      (List<PrinterModel> printers) {
+        matchPrinter = printers.firstWhereOrNull((element) => element.address == address);
+      },
+    );
+    if (matchPrinter != null) {
+      return connectPrinter(matchPrinter!);
+    }
+    return Left(PrinterError(message: 'Not found printer $address'));
+  }
+
+  Future<Either<AppError, PrinterModel>> lookUpPrinterByAddress(String address) async {
+    Either<AppError, List<PrinterModel>> result = await lookUpPrinters();
+    return result.fold(
+      (AppError l) {
+        return Left(l);
+      },
+      (List<PrinterModel> printers) {
+        PrinterModel? matchPrinter = printers.firstWhereOrNull((element) => element.address == address);
+        return matchPrinter != null ? Right(matchPrinter) : Left(AppError(message: 'Not found printer'));
+      },
+    );
   }
 
   void setListener() {

@@ -8,6 +8,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:panda_print_plugin/models/panda_printer.dart';
 import 'package:panda_print_plugin/models/printer_error.dart';
+import 'package:panda_print_plugin/panda_print_storage.dart';
 
 import 'panda_print_plugin.dart';
 
@@ -20,8 +21,14 @@ class PandaPrint {
     return PandaPrintPlugin.instance.discoverPrinters();
   }
 
-  static Future<Either<PrinterError, void>> connectToPrinter(String printerAddress) {
-    return PandaPrintPlugin.instance.connectPrinter(printerAddress);
+  static Future<Either<PrinterError, void>> connectToPrinter(String printerAddress) async {
+    Either<PrinterError, void> result = await PandaPrintPlugin.instance.connectPrinter(printerAddress);
+    if (result.isRight()) {
+      await PandaPrintStorage.saveConnectedPrinterAddress(printerAddress);
+    } else {
+      await PandaPrintStorage.deleteConnectedPrinterAddress();
+    }
+    return result;
   }
 
   static Future<Either<PrinterError, void>> printLoginQR(String loginQrCode) {
@@ -29,6 +36,7 @@ class PandaPrint {
   }
 
   static Future<void> init() async {
+    await PandaPrintStorage.init();
     return PandaPrintPlugin.instance.init();
   }
 }

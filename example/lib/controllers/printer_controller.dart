@@ -1,3 +1,4 @@
+import 'package:panda_print_plugin/panda_print_storage.dart';
 import 'package:panda_printer_example/controllers/base_controller.dart';
 import 'package:panda_printer_example/models/printer_model.dart';
 import 'package:panda_printer_example/services/printer_service.dart';
@@ -21,9 +22,9 @@ class PrinterController extends BaseController with DisposableMixin {
   Future<void> init() async {
     await _service.initPrinterPlugin();
     isInitCompleted = true;
-    // await load(
-    //   () async {},
-    // );
+    if (PandaPrintStorage.connectedPrinterAddress != null) {
+      await connectPrinterByAddress(PandaPrintStorage.connectedPrinterAddress!);
+    }
     notifyListeners();
   }
 
@@ -41,6 +42,15 @@ class PrinterController extends BaseController with DisposableMixin {
       /// The lookup printers will be handled in [_listenFoundPrinters]
       serviceResult: _service.lookUpPrinters(),
       onSuccess: (_) {},
+    );
+  }
+
+  Future<void> connectPrinterByAddress(String address) async {
+    await handleServiceResult(
+      serviceResult: _service.lookUpPrinterByAddress(address),
+      onSuccess: (PrinterModel printer) async {
+        await connectPrinter(printer);
+      },
     );
   }
 
