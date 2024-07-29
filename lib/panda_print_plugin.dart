@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:panda_print_plugin/models/panda_printer.dart';
 import 'package:panda_print_plugin/models/printer_error.dart';
+import 'package:panda_print_plugin/panda_print_plugin_ios.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'panda_print_plugin_android.dart';
@@ -11,7 +14,11 @@ abstract class PandaPrintPlugin extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static PandaPrintPlugin _instance = PandaPrintPluginAndroid();
+  static late PandaPrintPlugin _instance = Platform.isAndroid
+      ? PandaPrintPluginAndroid()
+      : Platform.isIOS
+          ? PandaPrintPluginIOS()
+          : throw 'PandaPrint only support for ios & android';
 
   /// The default instance of [PandaPrintPlugin] to use.
   ///
