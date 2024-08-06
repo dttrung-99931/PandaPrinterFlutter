@@ -50,7 +50,7 @@ SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_blue_plus: 4837da7d00cf5d441fdd6635b3a57f936778ea96
   integration_test: ce0a3ffa1de96d1a89ca0ac26fca7ea18a749ef4
-  panda_print_plugin: bf21d18201b579a1b47440d06ec9769e1bc0c4e3
+  panda_print_plugin: 529951e07d913173de8a87bb42662fd3f6c7bfc5
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   ReachabilitySwift: 7f151ff156cea1481a8411701195ac6a984f4979

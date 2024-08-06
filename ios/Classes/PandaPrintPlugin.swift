@@ -1,7 +1,9 @@
 import Flutter
 import UIKit
+import XYBLEManagerDelegate
 
-public class PandaPrintPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
+public class PandaPrintPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, XYBLEManagerDelegate
+ {
     static var channel: FlutterMethodChannel!
     static var discoverPrintersChannel: FlutterEventChannel!
     
@@ -48,4 +50,27 @@ public class PandaPrintPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             arguments: msg
         );
     }
+    
+    func xYdidUpdatePeripheralList(_ peripherals: [Any]!, rssiList: [Any]!) {
+       // HandleCallMethod.channel?.invokeMethod("err",arguments: nil)
+    }
+    
+    func xYdidConnect(_ peripheral: CBPeripheral!) {
+//        HandleCallMethod.channel?.invokeMethod("connected",arguments: nil)
+      
+    }
+   
+    func xYdidFail(toConnect peripheral: CBPeripheral!, error: Error!) {
+//        HandleCallMethod.channel?.invokeMethod("connectFalse",arguments: error)
+    }
+    
+    func xYdidDisconnectPeripheral(_ peripheral: CBPeripheral!, isAutoDisconnect: Bool) {
+//        HandleCallMethod.channel?.invokeMethod("disconnectFromPrinterDevice",arguments: isAutoDisconnect)
+    }
+    
+    func xYdidWriteValue(for character: CBCharacteristic!, error: Error!) {
+//        HandleCallMethod.channel?.invokeMethod("writingValue",arguments: error)
+
+    }
+    
 }

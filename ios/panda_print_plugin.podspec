@@ -20,4 +20,17 @@ A new Flutter plugin project.
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
+
+  # config ios xysdk 
+    s.static_framework = true
+    s.xcconfig = {
+     'USER_HEADER_SEARCH_PATHS' => '"${PROJECT_DIR}/.."/',
+     "LIBRARY_SEARCH_PATHS" => '"${PROJECT_DIR}/.."/*',
+   }
+   s.public_header_files = 'libs/XYSDK/include/XYSDK/*.h'
+   s.vendored_libraries = 'libs/XYSDK/XYSDK.a'
+  
+  # s.preserve_paths = 'panda_print_plugin.framework'
+  # s.xcconfig = { 'OTHER_LDFLAGS' => '-framework panda_print_plugin' }
+  # s.vendored_frameworks = 'panda_print_plugin.framework'
 end
