@@ -29,7 +29,7 @@ class PandaPrintPlugin: PandaPrintActivityAware(), FlutterPlugin, MethodCallHand
   private lateinit var channel : MethodChannel
   private lateinit var methodChannelResult: Result
 
-  private lateinit var discoveredPrintersChannel : EventChannel
+  private lateinit var discoveredPrintersChannel : EventChannel 
   private var discoveredPrintersSink: EventChannel.EventSink? = null
 
   private lateinit var statusChannel : EventChannel

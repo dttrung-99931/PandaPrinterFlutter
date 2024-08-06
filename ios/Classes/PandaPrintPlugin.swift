@@ -2,17 +2,6 @@ import Flutter
 import UIKit
 
 public class PandaPrintPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
-    // Channel names
-    static let discoveredPrinterEventName = "discovered_printers_event_channel";
-    static let statusEvtChannelName = "status_event_channel";
-    static let pluginChannelName = "panda_print_plugin";
-    static let logMethodName = "logd";
-    // Channel method names
-    static let discoverPrintersMethod = "discoverPrinters";
-    static let requestPermissionsMethod = "requestPermissions";
-    static let connectPrinterMethod = "connectPrinter";
-    static let printLoginQRMethod = "printLoginQR";
-
     static var channel: FlutterMethodChannel!
     static var discoverPrintersChannel: FlutterEventChannel!
     
@@ -20,13 +9,13 @@ public class PandaPrintPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         let instance = PandaPrintPlugin()
 
         channel = FlutterMethodChannel(
-            name: pluginChannelName,
+            name: "panda_print_plugin",
             binaryMessenger: registrar.messenger()
         )
         registrar.addMethodCallDelegate(instance, channel: channel!)
         
         discoverPrintersChannel = FlutterEventChannel(
-            name: discoveredPrinterEventName, 
+            name: "discovered_printers_event_channel",
             binaryMessenger: registrar.messenger()
         )
         discoverPrintersChannel.setStreamHandler(instance)
@@ -34,14 +23,14 @@ public class PandaPrintPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
-    case "getPlatformVersion":
-      result("iOS " + UIDevice.current.systemVersion)
-    case "discoverPrinters":
-        log("Discovering printers");
-    default:
-      result(FlutterMethodNotImplemented)
+        case "discoverPrinters":
+            log("Discover printers")
+        case "connectPrinter":
+            log("Connect to a printer")
+        default:
+            return result(FlutterMethodNotImplemented)
     }
-      log("Done setup method ios");
+    log("Done setup method ios");
   }
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
@@ -55,7 +44,7 @@ public class PandaPrintPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     
     private func log(_ msg: String){
         PandaPrintPlugin.channel.invokeMethod(
-            PandaPrintPlugin.logMethodName,
+            "logd",
             arguments: msg
         );
     }
